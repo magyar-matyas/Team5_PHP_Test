@@ -9,6 +9,11 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum')->only(['destroy']);
+    }
+
     public function index()
     {
         return response()->json(User::all());
@@ -39,9 +44,9 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $data = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => ['sometimes', 'email', Rule::unique('users')->ignore($user->id)],
-            'password' => 'sometimes|string|min:6',
+            'name' => 'required_without_all:email,password|string|max:255',
+            'email' => 'required_without_all:name,password|email|unique:users,email,' . $user->id,
+            'password' => 'required_without_all:name,email|string|min:6',
         ]);
 
         if (isset($data['name'])) {
